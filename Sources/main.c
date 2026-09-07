@@ -284,14 +284,13 @@ void main(void){  //MCF52233CAF60    256Kbytes/RAM=32kbytes.
 		vTask12_Signal_Processor_Controller();
         vTask15_Control_de_Reloj_Analogo();
 		debug++;
-        
-
-	   
+       
 }//----------------- fin codigo de pruebas----------
   	  
 
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
-  /*** Processor Expert end of main routine. DON'T MODIFY THIS CODE!!! ***/
+  /*** Processor Expert end of main rout
+   * ine. DON'T MODIFY THIS CODE!!! ***/
   for(;;){}
   /*** Processor Expert end of main routine. DON'T WRITE CODE BELOW!!! ***/
 } /*** End of main routine. DO NOT MODIFY THIS TEXT!!! ***/
