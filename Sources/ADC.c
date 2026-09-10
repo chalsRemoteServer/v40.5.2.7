@@ -110,6 +110,11 @@ void SPIselect(unsigned char device){
 	 }//fin switch
 }//fin seleccion de bus SPI para 3 diferentes dispositivos de que nesesitan transferir datos SPI
 
+void disable_ADC(void){
+	TI2_DisableEvent();
+	Busy_Disable();
+}//fin disable adc-------------------------------
+
 
 //QMR bits:7-0->  10h@1.252MHz, 08h@2.5Mhz  0A@2mhz  formula= 40Mhz/(2*2Mhz)=num binario del 7 al 0, 2Mhz:freec de QSPI deseada  
 void init_ADC(void){//CPOL=0  CPHA=1,-> los ADC TRABAJaron BIEN¡¡ CON ESTOS VALORES

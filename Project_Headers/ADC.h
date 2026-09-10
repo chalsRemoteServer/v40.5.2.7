@@ -56,7 +56,7 @@ void QSPI_OnTxChar_IRQ(void);
 //unsigned char Read_QSPI2(signed short int *xx8,signed short int *xx7);
 void Read_QSPI2(int16 *x,int16 *y);
 void QSPI_On_TMR2_IRQ(void);
-
+void disable_ADC(void);
 
 #endif /* ADC_H_ */
 

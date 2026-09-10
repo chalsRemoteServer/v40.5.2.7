@@ -21,9 +21,8 @@
  * 
  * 
  * */
-#endif /* FECQCONTROLLER_H_ */
 
-
+#include "PE_Types.h"
 
 #define MSB_HI 0  // hibyte-hiword
 #define MSB_LO 1 //    0123->ORDEN DE BYTES
@@ -47,13 +46,14 @@ typedef union{//access word:
 
 
 //declaacion de procedimentos funciones o metodos-----------------------------
-void  init_Control_deFrecuencias(void);
+//void  init_Control_deFrecuencias(void);
 void clockPulso(void);
-void init_DDS(char modo);
+//void init_DDS(uint8  *m8);
 void WriteRegisterAD9833(unsigned short int dat);
 unsigned long int  getFrecuency(void); 
 void vTask15_Control_de_Reloj_Analogo(void);
  
- 
+#endif /* FECQCONTROLLER_H_ */
+
  
  

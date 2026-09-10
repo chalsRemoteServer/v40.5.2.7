@@ -54,7 +54,7 @@
 #define FRECUENCIA_ALTA  870000  //frecuencias base para sumarle la variable
 #define FRECUENCIA_MEDIA 280000
 #define FRECUENCIA_BAJA  100000 
-#define FORMA_DE_ONDA    CUADRADA//CUADRADA O SINUSOIDAL
+#define FORMA_DE_ONDA    SINUSOIDAL//CUADRADA O SINUSOIDAL
 
 
 
@@ -69,23 +69,21 @@ volatile uint8 delay_RelojAnalogo_IRQ;//cuenta 100mseg y alli se queda si llega 
 unsigned long int frecuency0;//store the actual frecq to compare in case of any change of it
 
 
-static vTask19_encender_DDS_y_Driver(uint8 *mem8);
+static void vTask19_encender_DDS_y_Driver(uint8 *mem8);
 static void detector_DDS(void);
 static void detector_BAL_DRV(void);
+static void Programar_DDS(void);
 
 
 //extern unsigned long int frecuency; //guarda el valor actual de la frecuencia activada
 
- void init_Control_deFrecuencias(void ){
-	
-#if DDS_GENERADOR == AD9834_DDS	 
-	
+//void init_Control_deFrecuencias(void ){	
+/*#if DDS_GENERADOR == AD9834_DDS	 
 	 init_DDS(_BOOT_);
 #elif DDS_GENERADOR == ARDUINO_DDS
      Cambio_de_Frecuencia_por_IIC_1(1000);//frecuencia en khz
-#endif
-
- }// fin de la inicializacion de control de frecuencias
+#endif*/
+//}// fin de la inicializacion de control de frecuencias
  
  
 
@@ -109,6 +107,23 @@ unsigned long int  getFrecuency(void){
 #endif	      
  }// fin de get frecuency---------------------------------------------------------------
  
+
+// void SM1_Init_v2(void){
+// 	
+// 	  setReg16(QDLYR,0x0007U);//para 58.98Mhz,7=3.8us 4=2.17useg 
+// 	  setReg16(  QMR,0x82FAU);
+// 	  // MSTR  = 1
+// 	  // BITSE = 1  -> 16 bits
+// 	  // CPOL  = 1
+// 	  // CPHA  = 0
+// 	  // MSB first
+// 	  // BAUD  = 0xFA
+// 	  setReg16(QWR, 0x0050U);//new=0, end=5->6words
+// 	  setReg16(QIR, 0x110DU);//limpiar flag QSPI
+// 	  setReg16(QAR, 0x0020U);//comando RAM[0], inicio:20h
+// 	  setReg16(QDR, 0x4000U);  
+// }//fin de init v2-----------------------------------------
+
  
  /*CLOCK EDGE->RISING EDGE+++++++++++++++++++PARAMETROS+PARA+EL+PUERTO+QSPI++CONECTADO+++
   * SHIFT CLOCK IDLE POLARITY= HIGH++++++++++DIRECTAMENTE+ EL+PROCESADOR+AL+DSS+++++++++
@@ -121,54 +136,59 @@ unsigned long int  getFrecuency(void){
   *   1980000   990000    990.1khz     0%      0%
   *   1982000   991000    990.1khz
   *   1998000   999000    990.1khz
-  *   
-  *   
-  * */
- void init_DDS(char modo){//Direct Digital Synthesis  Generator chip
+  *  System Clock:58.98MHz.
+  * tiempo de Funcion:5.1useg Duracion de QSPI 6-bytes:862useg */
+static void Programar_DDS(void){//Direct Digital Synthesis  Generator chip
 #if DDS_GENERADOR == AD9834_DDS		 
-	unsigned long int frecuency; //=875000;//si es cadrada el reslado es la mitad de la frecencia
-	unsigned short int MSB,LSB,phase=0; //2 bytes   
-	unsigned long int calculated_freq_word; //4 bytes   
-	float AD9833val=0.00000;
+unsigned long int frecuency; //=875000;//si es cadrada el reslado es la mitad de la frecencia
+unsigned short int MSB,LSB,phase=0; //2 bytes   
+unsigned long int calculated_freq_word; //4 bytes   
+float AD9833val;
+   	 
+     disable_ADC();//detener el ADC()
+     SPIselect(DDS);AD9833val=0.00000;
+     frecuency=getFrecuency();
+     //frecuency=1000000*2;
+	 if(frecuency>1100000){
+	                return;}//ya se programo DDS, dara error mas adelante
+     AD9833val=((float)(frecuency))/XTAL_ANALOGA;
+	 calculated_freq_word=(unsigned long int)(AD9833val*0x10000000);
+    MSB=(unsigned short int)((calculated_freq_word & 0xFFFC000)>> 14); // 14 bits
+    LSB=(unsigned short int)( calculated_freq_word & 0x3FFF);
+	//set cntrl bits D15 & D14 to 0 & 1, repectivel, for frecq reg, 0
+	LSB |=0x4000;
+	MSB |=0x4000;
+	phase &=0xC000;
+	setReg16(QDLYR,0x0007U);//delay=3.80us con Fsys=58.98MHz
+	setReg16(QMR, 0x82FAU);//master,16bits,CPOL=1,CPHA=0,BAUD=250
+	setReg16(QWR, 0x0500U);//new=0,end=5->6words
+	setReg16(QIR, 0x110DU);//limpiar flag QSPI
+	setReg16(QAR, 0x0020U);//comando RAM[0],inicio:20h
+	setReg16(QDR, 0xE000U);//comando[0]:CONT=1,BITSE=1,DT=1->delay despues de RESET
+	setReg16(QDR, 0xC000U);//comando[1]:CONT=1,BITSE=1
+	setReg16(QDR, 0xC000U);//comando[2]:CONT=1,BITSE=1
+	setReg16(QDR, 0xC000U);//comando[3]:CONT=1,BITSE=1
+	setReg16(QDR, 0xC000U);//comando[4]:CONT=1,BITSE=1
+	setReg16(QDR, 0x4000U);//comando[5]:CONT=0,BITSE=1->fin,FSYNC=HIGH
+	setReg16(QAR, 0x0000U);//TX RAM[0],inicio:00h
+	setReg16(QDR, 0x0100U);//word[0]:RESET
+	setReg16(QDR, 0x2100U);//word[1]:control
+	setReg16(QDR, LSB);//word[2]:FREQ LSB
+	setReg16(QDR, MSB);//word[3]:FREQ MSB
+	setReg16(QDR, 0xC000U);//word[4]:PHASE
+	setReg16(QDR, 0x2028U);//word[5]:salida cuadrada
 	
-	frecuency=getFrecuency();
-	if((frecuency0!=frecuency)||(modo==1)||(modo==_BOOT_)){//preguntamos si la frecuencia que tenemos activa es el mismo valor por el que queremos reconfigurar
-		frecuency0=frecuency;
-		frecuency=1000000*2;
-		//ADCstatus=0; //se ejecute la interrupcion para el DDS y no para el ADC
-		SM1_Init();//se hicializa el QSPI porque lo modifcamos para el ADC
-		//delay_ms(400);
-		SPIselect(DDS);//SELECCIONA el bus SPI para el device AD9833 direct digital synthesis generator chip
 
-		
-  // while(1){
-        if(frecuency>1100000)
-    	  frecuency=286000;
-        else frecuency+=500;
-		AD9833val=((float)(frecuency))/XTAL_ANALOGA;
-		calculated_freq_word=(unsigned long int)(AD9833val*0x10000000);
-		MSB=(unsigned short int)((calculated_freq_word & 0xFFFC000)>> 14); // 14 bits
-		LSB=(unsigned short int)( calculated_freq_word & 0x3FFF);
-		//set cntrl bits D15 & D14 to 0 & 1, repectivel, for frecq reg, 0
-		LSB |=0x4000;
-		MSB |=0x4000;
-		phase &=0xC000;
-		WriteRegisterAD9833(0x100);//reset //(0x2100);
-		//delay_ms(20);
-		WriteRegisterAD9833(0x2100); //square
-		WriteRegisterAD9833(LSB);// LOWER 14 bits
-		WriteRegisterAD9833(MSB); // upper 14 bits
-		WriteRegisterAD9833(0xC000);//phase);//mid-low
-		WriteRegisterAD9833(0x2028); //waveform cuadrada
-		
-		//delay_ms(1000);
-		  //}
-		//WriteRegisterAD9833(0x2000); //sin
-		  //AD9837Write(0x2002); //triangle
-		if(modo!=_BOOT_)
-				      init_ADC();
-	}//fin if is the same frecq?  	
-	 //delay_ms(350);
+	// WriteRegisterAD9833(0x0100); //reset //(0x2100);
+	// //delay_ms(20);
+	// WriteRegisterAD9833(0x2100); //square
+	// WriteRegisterAD9833(LSB);// LOWER 14 bits
+	// WriteRegisterAD9833(MSB); // upper 14 bits
+	// WriteRegisterAD9833(0xC000);//phase);//mid-low
+	// WriteRegisterAD9833(0x2028); //waveform cuadrada
+	// delay_ms(1000);
+	// WriteRegisterAD9833(0x2000); //sin
+	 //AD9837Write(0x2002); //triangle
 #endif	 
  }//fin initializae DDS--------------------------------------------------------------------
  
@@ -197,7 +217,7 @@ static uint8 estado15;
 static uint8 status15;
 static uint16 cont15;
 const uint16 TIEMPO_DE_MONITOR=1000;
-enum{ SIZE_MEMO8=1};//Memoria de los subprocesos
+enum{ SIZE_MEMO8=2};//Memoria de los subprocesos
 static uint8 mem8[SIZE_MEMO8];
 
   if(cont15++>TIEMPO_DE_MONITOR){
@@ -282,5 +302,20 @@ static uint8 iVal;//indice del valor
 	   case 6:sys.u.bits.error_Reloj_Analogo=0;	        	 
 	   default:estado=1;break;}
 }//fin detector_DDS--------------------------------
+
+
+/* 
+Encender  el Direct Digital Sinthetizer por   comandos de bits por QSPI,
+a la frecuencia que guarde las variables globales de frecq, y controlar
+encendido de Driver y lectura de voltajes balance y driver. * */
+static void vTask19_encender_DDS_y_Driver(uint8 *mem8){
+uint8 *estado19;	
+	 
+	estado19=mem8+0;//Memoria Requerida=1bytes
+	switch(*estado19){
+		case 1:Programar_DDS();(*estado19)++;break;
+		case 2:
+	default:*estado19=1;break;}
+}// fin vTask19_encender_DDS_y_Driver--------------------
 
  
