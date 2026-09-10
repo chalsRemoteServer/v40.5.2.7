@@ -273,7 +273,7 @@ void main(void){  //MCF52233CAF60    256Kbytes/RAM=32kbytes.
     //init_menuTFT();
     //controlador_LED12(WAIT);
     
-    init_queues();
+    
     sys.u.flags=0;//todas las flag a cero
     //sys.u.bits.Driver_out=0;//0:Apagar signal driver, SE MANDO AL init offset
     //controlador_LED3_Detect(ON);//encedered2

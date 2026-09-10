@@ -229,7 +229,8 @@ static uint8 mem8[SIZE_MEMO8];
 				 estado15++;break;
     	  case 3:if(sys.u.bits.Encender_DDS && //Debe estar encendido y no lo esta
     		        !sys.u.bits.DDS_encendido){
-    		            vTask19_encender_DDS_y_Driver(&mem8[0]);}
+    		            //vTask19_encender_DDS_y_Driver(&mem8[0]);
+    	                 }
     	         else{estado15++;}break;
     	  case 4:detector_DDS();estado15++;break;		//monitor de voltajes Direct Digital Synthetizer    
     	  case 5:detector_BAL_DRV();estado15++;break;//Monitor de Balance y voltaje de driver            
