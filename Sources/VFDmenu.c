@@ -3188,7 +3188,7 @@ return 0;
 }//fin get decena to hexadecimal char---------------------------
 
 void sendSPI_DSScomm(void){
-	 init_DDS(1);
+	 //init_DDS(1);
 }// fin send SPI DSS---------------------------------------------------------------------------------------
 
 

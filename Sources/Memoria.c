@@ -934,8 +934,8 @@ void configModificado(unsigned char m){// encapsula la variable de configracion 
 
 void MemoEEPROM_DDS(unsigned operacion,unsigned char contexto1,unsigned char mode){//con CONTROL DE DDS
      MemoEEPROM(operacion,contexto1);
-     if(mode==RESET_DDS_PWG)
-        init_DDS(0);//se cambia la frecuecia en la analoga
+     if(mode==RESET_DDS_PWG){}
+        //init_DDS(0);//se cambia la frecuecia en la analoga
 }//fin memor EEPROM para inizializar el DDS-PWG--------------------------------------------------------
 
 
@@ -1047,7 +1047,7 @@ unsigned char buffer[PROD_VAR_SIZE];//buffer para escribir variables del sistema
                                    *(p+1)=Media;
                                    *(p+2)=Baja;
                                    writeEEPROMblock(add,CONTROL_DE_FRECUENCIA_SIZE,p);
-                                   init_DDS(0);//NO DESCOMENTAR FALLA SAVE PRODUCT//se cambia la frecuecia en la analoga
+                                   //init_DDS(0);//NO DESCOMENTAR FALLA SAVE PRODUCT//se cambia la frecuecia en la analoga
                               }break;              
 
        case INFORMACION_DE_USUARIO: //CuentaProducto=APAGAR;break; 
@@ -1165,7 +1165,7 @@ unsigned char buffer[PROD_VAR_SIZE];//buffer para escribir variables del sistema
                           *(p+3)=word32.byte[2];
                           *(p+4)=word32.byte[3];
                           writeEEPROMblock(add,FRECUENCIA_SELECT_SIZE,p);
-                          init_DDS(0); //NO DESCOMENTAR//se cambia la frecuencia del DDS xq se acepto guardar los cambios hechos
+                          //init_DDS(0); //NO DESCOMENTAR//se cambia la frecuencia del DDS xq se acepto guardar los cambios hechos
                     }break;
        case RELOJ_DE_SISTEMA: saveTimeNVRAM(); //año,mes,dia,fecha,hora,minutos,segundos;break; 
                             break;
