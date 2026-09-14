@@ -269,7 +269,7 @@ void main(void){  //MCF52233CAF60    256Kbytes/RAM=32kbytes.
     //enableIO_reciv();	
     //init_Semaforos();
     //init_Analoga();
-    //init_queues();
+    init_queues();
     //init_menuTFT();
     //controlador_LED12(WAIT);
     
