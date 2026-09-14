@@ -379,14 +379,14 @@
   00008C00 0000002C .text   __destroy_global_chain	(librt.a cf_staticinitia)
   00008C2C 00000034 .text   __rt_shru64	(librt.a longlongcf.o   )
   00008C60 00000024 .text   __rt_cmpu64	(librt.a longlongcf.o   )
-  00008C84 0000000C .rodata @1080	(Memoria_c.obj)
-  00008C90 00000007 .rodata @1082	(Memoria_c.obj)
-  00008C97 0000000B .rodata @1084	(Memoria_c.obj)
-  00008CA2 00000005 .rodata @1086	(Memoria_c.obj)
-  00008CA7 0000000B .rodata @1088	(Memoria_c.obj)
-  00008CB2 00000007 .rodata @1094	(Memoria_c.obj)
-  00008CB9 0000000E .rodata @1130	(Memoria_c.obj)
-  00008CC7 00000013 .rodata @1132	(Memoria_c.obj)
+  00008C84 0000000C .rodata @1079	(Memoria_c.obj)
+  00008C90 00000007 .rodata @1081	(Memoria_c.obj)
+  00008C97 0000000B .rodata @1083	(Memoria_c.obj)
+  00008CA2 00000005 .rodata @1085	(Memoria_c.obj)
+  00008CA7 0000000B .rodata @1087	(Memoria_c.obj)
+  00008CB2 00000007 .rodata @1093	(Memoria_c.obj)
+  00008CB9 0000000E .rodata @1129	(Memoria_c.obj)
+  00008CC7 00000013 .rodata @1131	(Memoria_c.obj)
   00008CDA 00000012 .rodata @940	(IOcomms_c.obj)
   00008CEC 00000012 .rodata @942	(IOcomms_c.obj)
   00008CFE 00000012 .rodata @986	(IOcomms_c.obj)
@@ -662,5 +662,5 @@
   00000400 00000400 00000018 .cfmprotect cfmprotrom
   40000000 40000000 00000000 .ipsbar    ipsbar
 
-# Link start time: Tue Sep 08 17:42:30 2026
-# Link end time: Tue Sep 08 17:42:31 2026
+# Link start time: Mon Sep 14 10:53:50 2026
+# Link end time: Mon Sep 14 10:53:50 2026
