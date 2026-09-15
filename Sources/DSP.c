@@ -151,6 +151,8 @@ extern unsigned char semb; //semaforo para la barra de deteccion para mandar com
 //Metodos---------------------------------------------------------------------------
 static uint8_t  init_DSP(void){
 int i,j;
+static uint8 init;
+     if(init)return; 
 	 //headA=&A[0];  //init pointer for the FIFO
 	 //tailA=&A[SIZE_FIFO-1];
 	 //headB=&B[0];
@@ -165,15 +167,16 @@ int i,j;
 	 mallocCharOp(&ListaFIFOcharOP[0]);
 	 anguloVibracion=0;//debug esta variable debeser sacada de la memoria.
 	 //extern unsigned char DDSmap[DDSMAPSIZEX][DDSMAPSIZEY];
-     for(i=0;i<DDSMAPSIZEX;i++)
-    	 for(j=0;j<DDSMAPSIZEY;j++)
-    		 DDSmap[i][j]=0;
+//     for(i=0;i<DDSMAPSIZEX;i++)
+  //  	 for(j=0;j<DDSMAPSIZEY;j++)
+    //		 DDSmap[i][j]=0;
      Deteccion.tipo=NORMAL;//DEBUG  ESTO DEBE ser gestionado en la memoria.
      dds.Bnderas.bit.DDS_Reload=FALSE;
 //     dds.Bnderas.bit.debug=FALSE;
      dds.Bnderas.bit.clean_Buffers=FALSE;//libre para meter en la fifo un pixel
-
-return 1;
+     init_ADC();
+     init=1;
+return init;
 }// fin init DSP digital Signal Processor----------------------------------
 
 

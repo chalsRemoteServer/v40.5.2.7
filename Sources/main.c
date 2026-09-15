@@ -253,16 +253,16 @@ void main(void){  //MCF52233CAF60    256Kbytes/RAM=32kbytes.
   disableIO_reciv();
   TACHO_Disable();
   CLK_AN_COUNT_Disable();
-    init_I2C();
-    init_Menu();
-    init_ErrorController();
-    init_MemoVars(); //sacar variables de la EEPROM no se pudo poner el preprocesador #error
-    init_Products();
+    //init_I2C();
+    //init_Menu();
+    //init_ErrorController();
+    //init_MemoVars(); //sacar variables de la EEPROM no se pudo poner el preprocesador #error
+    //init_Products();
     //init_Control_deFrecuencias();
     //init_DSP();
     //init_VFD();
     //run_Menu();
-    //init_ADC();//al final se debe ejecutar
+    //init_ADC();//se ejecuta en init DSP al final se debe ejecutar
     //init_IOcomms();
     //enable_ErrorControls();//va al final de todos
     //enable_Comms_TX();
