@@ -282,7 +282,7 @@ void QSPI_OnTxChar_IRQ(void){//poner en evento de transmision
 		   CS1_ON();//activamos el siguiente ADC
 		   setReg16Bit(QDLYR,SPE);//start Transmit to get Second ADC
 		   TI2_EnableEvent();
-}//fin void QSPI_OnTxChar_IRQ(void){----------------------------------------------
+}//fin void QSPI_OnTxChar_IRQ----------------------------------------------
 
 void QSPI_On_TMR2_IRQ(void){//Int=145useg
 int16 n;

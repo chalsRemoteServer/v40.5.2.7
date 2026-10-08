@@ -177,6 +177,7 @@
 #include "LED56_COMM_WARN_MON.h"
 #include "LED3_Process.h"
 #include "TACHO.h"
+#include "CLK_AN_COUNT.h"
 #include "CNTR_G_AMP1.h"
 #include "CNTR_G_AMP2.h"
 #include "CNTR_G_AMP3.h"
@@ -291,6 +292,8 @@ void main(void){  //MCF52233CAF60    256Kbytes/RAM=32kbytes.
   /*** Don't write any code pass this line, or it will be deleted during code generation. ***/
   /*** Processor Expert end of main rout
    * ine. DON'T MODIFY THIS CODE!!! ***/
+  for(;;){}
+  /*** Processor Expert end of main routine. DON'T MODIFY THIS CODE!!! ***/
   for(;;){}
   /*** Processor Expert end of main routine. DON'T WRITE CODE BELOW!!! ***/
 } /*** End of main routine. DO NOT MODIFY THIS TEXT!!! ***/
