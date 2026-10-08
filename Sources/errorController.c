@@ -741,7 +741,7 @@ vT9:   ahora = millis();
 		   LedWarning_Timer();}  // Controlar LED Warning cada 1ms
 	   if(elapsed2>225){elapsed2=0;
 	       Monitor_System_Diagnostico_LEDs(EJECUTAR);}//ejeuta timer cada 500useg
-	   
+	   Monitor_de_Error_de_ADCs();
 }//-------------------------------------------------------------------------------------
 
 
@@ -751,7 +751,7 @@ vT9:   ahora = millis();
 // ============================================================
 /*   NORM_DELAY: 1600->800mseg           */
 void IRQ_Monitor_System_status_LEDs_v3(void){//IRQ cada 500useg
-enum{ ERR_DELAY=700,  NORM_DELAY=1600 /*1250*/};
+enum{ ERR_DELAY=700,  NORM_DELAY=1250 /*1250*/};
 static uint16_t delay;
   
   switch(FailsCtl.LedStatus){//leds status

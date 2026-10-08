@@ -28,6 +28,7 @@
 #include "DSP.h"
 #include "queue.h"
 #include "errorController.h"
+#include "LED3_Process.h"
 
 
 
@@ -64,6 +65,22 @@ struct _ADC_ adc;
 extern struct _Signal_ Signal;
 extern volatile ErrorControl_t FailsCtl;
 extern struct _Signale_ Signale;
+
+typedef enum{
+	APAGADO=1,ENCENDIDO=0}estadoLed;
+typedef struct{
+  uint32 control;	
+  //uint8 counter;
+  uint8 busyIRQ;
+  uint8 adcSample;
+  uint8 readQSPI;
+  uint8 tmr2IRQ;
+  estadoLed status;
+  uint32 LedControl;
+}Led_ADC;
+
+static Led_ADC ledADC;
+static void func(uint8 *v,const uint8 max);
 
 
 
@@ -147,7 +164,8 @@ register unsigned char i;
 	 //ADCstatus=0xC0 | ADC_1;//abxx xxxx a=anable ADC b=flag of RX SPI
 	 RC_ON(); //no quitar de aqui	
 	 CS0_OFF();
-	 
+	 ledADC.status=APAGADO;
+	 LED3_Process_PutVal(1);//apagado=1
 
 }//inicizamos el ADC---------------------------------------------------------------------------------------
 
@@ -173,7 +191,7 @@ void Busy_Interrupt_IRQ(void){//Interrumption on down edge, EXTERNAL PIN INTERRU
        CS1_OFF();// select ADC8, inicimos lo leemos
        setReg16Bit(QDLYR,SPE);//start trasmit to get data from ADC7
        Busy_Disable();//PULSO 8.2us, MicroSegundos
-           
+       ledADC.busyIRQ=0;    
 }//fin busy interrupt  INTERRUPT REQUEST---------------------------------------------------------------------
  
 
@@ -188,10 +206,43 @@ void adcSample_IRQ(void){//se ejecuta cada 1ms y 14us lo lanza  el TI1@events.c
 				 Busy_Enable();//este enable es importante si se quita se detiene la conversion.
 				 RC_OFF();//640nseg, que se ejecute la conversion, se ordena la execucion con low
 				 RC_ON();//}//PULSO DE 230ns, nanosegundos
-			 //else {swap=0xAA;}
+	             ledADC.adcSample=0;
+		 //else {swap=0xAA;}
         //}//encendemos bandera para hacer flipflop	
         
 }// adc sample-----------------------------------------------------------------------------------------------
+
+//monitor del led que monitor si funcionan los ADCs
+void Monitor_de_Error_de_ADCs(void){	
+const uint8	MAX=250,ERROR_ADC=0x3F;
+enum{ TIME_ON=300,TIME_OFF=2000};
+static uint8 ret;
+  if(++ledADC.control>800){ret=0;	  
+	  ret+=func(&ledADC.adcSample,MAX);
+	  ret+=func(&ledADC.busyIRQ  ,MAX);
+	  ret+=func(&ledADC.readQSPI ,MAX);
+	  ret+=func(&ledADC.tmr2IRQ  ,MAX);
+      }//fin de delays ---  
+  
+ if(!ret){//no hay error
+   if(ledADC.status){	  
+	 if(++ledADC.LedControl>TIME_ON){
+		 ledADC.status=0;  
+	     LED3_Process_PutVal(APAGADO);}}
+   else{if(++ledADC.LedControl>TIME_OFF){
+         ledADC.status=1;
+         LED3_Process_PutVal(ENCENDIDO);}}}
+ else{LED3_Process_PutVal(ENCENDIDO);}
+}//fin de monitor de los ADCs--------------------------------------
+
+
+static void func(uint8 *v,const uint8 max){
+uint8 ret;	
+	  if(*v<max){
+		++(*v);ret=0;}   
+	  else{ret=1;}
+return ret;	  
+}//------------------------------------------
 
 
 //
@@ -268,6 +319,7 @@ void Read_QSPI2(int16 *x,int16 *y){//esto no es interrupcion
     		  Signale.CentOffset.X.append(*x,&Signale.CentOffset.X);
     		  Signale.CentOffset.Y.append(*y,&Signale.CentOffset.Y);}}
       Signale.Raw.sem=0;//Liberamos recurso 
+      ledADC.readQSPI=0;
 }//fin prueba---------------------------------------------------
 
 
@@ -297,7 +349,8 @@ int16 n;
 		   FailsCtl.LedStatus=ERROR2;}
 	   CS1_OFF();//activamos el siguiente ADC
 	   setReg16Bit(QIR,SPIF);//esto lo piso la IA
-	   Signale.Raw.sem=0;//liberamios  recurso  	
+	   Signale.Raw.sem=0;//liberamios  recurso 
+	   ledADC.tmr2IRQ=0;
 }//FIN DE timer2 IRQ to get ADC2-------------------------------------
 
 

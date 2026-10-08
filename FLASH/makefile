@@ -106,11 +106,11 @@ endif
 
 # Other Targets
 clean:
-	-$(RM) $(S_DEPS_QUOTED) "./*/*.obj" "./*/*/*.obj"  $(CPP_DEPS_QUOTED) $(CC_DEPS_QUOTED) $(_OUTPUTTYPE_NAME_BURNER_OUTPUT_OUTPUTS_QUOTED) $(S_UPPER_DEPS_QUOTED) $(CXX_DEPS_QUOTED) $(ASM_DEPS_QUOTED) $(ASM_UPPER_DEPS_QUOTED) $(C_UPPER_DEPS_QUOTED) $(C++_DEPS_QUOTED) $(EXECUTABLES_QUOTED) "./*/*.d" "./*/*/*.d"  $(ProjDirPath)/FLASH/37_8_IN1UP.elf $(ProjDirPath)/FLASH/37_8_IN1UP.args $(ProjDirPath)/FLASH/37_8_IN1UP.elf.S19 $(ProjDirPath)/FLASH/37_8_IN1UP.elf.xMAP
+	-$(RM) $(S_DEPS_QUOTED) "./*/*.obj" "./*/*/*.obj"  $(CPP_DEPS_QUOTED) $(CC_DEPS_QUOTED) $(_OUTPUTTYPE_NAME_BURNER_OUTPUT_OUTPUTS_QUOTED) $(S_UPPER_DEPS_QUOTED) $(CXX_DEPS_QUOTED) $(ASM_DEPS_QUOTED) $(ASM_UPPER_DEPS_QUOTED) $(C_UPPER_DEPS_QUOTED) $(C++_DEPS_QUOTED) $(EXECUTABLES_QUOTED) "./*/*.d" "./*/*/*.d"  $(ProjDirPath)/FLASH/37_8_IN1UP.elf
 	-@echo ' '
 
 post-build:
-	-"E:/00_MIS_DOCUMENTOS/02_DESARROLLO/04_FIRMWARE/03_GSI_ASD+_f/03_uP_f/v40.5_gitHub/v40.5.2.7/memory_usage.bat" "37_8_IN1UP.elf.xMAP" "v40.5.2.7"
+	-"E:/00_MIS_DOCUMENTOS/02_DESARROLLO/04_FIRMWARE/03_GSI_ASD+_f/03_uP_f/v40.5/v40.5.2.7/memory_usage.bat" "37_8_IN1UP.elf.xMAP" "v40.5.2.7"
 	-@echo ' '
 
 .PHONY: all clean dependents explicit-dependencies warning-messages
