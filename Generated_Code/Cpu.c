@@ -7,7 +7,7 @@
 **     Version     : Component 01.003, Driver 01.06, CPU db: 3.00.000
 **     Datasheet   : MCF52235RM Rev. 4, MCF52235RMAD Rev. 4, MCF52235DS Rev. 3, Family-Configs-52235
 **     Compiler    : CodeWarrior MCF C Compiler
-**     Date/Time   : 2026-09-03, 18:08, # CodeGen: 2
+**     Date/Time   : 2026-09-28, 17:48, # CodeGen: 5
 **     Abstract    :
 **
 **     Settings    :

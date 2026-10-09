@@ -294,6 +294,36 @@ void Read_QSPI2(int16 *x,int16 *y){//esto no es interrupcion
 
 
 
+//INTERRUPCION PRINCIPAL MAQUINA AUTIMATICA DE 1ms AQUI  NO SE 
+//RESTA EL OFFSET
+//se ejecuta cuando hay una IRQ de Transmision del QSPI
+void QSPI_OnTxChar_IRQ(void){//poner en evento de transmision
+//signed short int n;
+		   if(Signale.Raw.sem){return;}//recurso ocupado nos salimos
+		   Signale.Raw.sem=1;//Tomamos control del recurso 
+		   CS1_ON();//activamos el siguiente ADC
+		   setReg16Bit(QDLYR,SPE);//start Transmit to get Second ADC
+		   TI2_EnableEvent();
+}//fin void QSPI_OnTxChar_IRQ----------------------------------------------
+
+void QSPI_On_TMR2_IRQ(void){//Int=145useg
+int16 n;
+       TI2_DisableEvent();
+       if(!(QIR&QIR_SPIF_BITMASK)){return;}//Por si no termino de recibir los datos en 145useg,descartamos estos datos 
+	   setReg16(QAR,0x0010); //IMPRTANTE ponemos el ADDRESS EN RECEPCION pointer to reg RX spi
+	   n=(signed short int)getReg16(QDR);//moves the next position and return old content
+	   if(!Signale.Raw.X.append(n,&Signale.Raw.X)){
+		   FailsCtl.LedStatus=ERROR2; }
+	   n=(signed short int)getReg16(QDR);//moves the next position and return old content
+	   if(!Signale.Raw.Y.append(n,&Signale.Raw.Y)){
+		   FailsCtl.LedStatus=ERROR2;}
+	   CS1_OFF();//activamos el siguiente ADC
+	   setReg16Bit(QIR,SPIF);//esto lo piso la IA
+	   Signale.Raw.sem=0;//liberamios  recurso  	
+}//FIN DE timer2 IRQ to get ADC2-------------------------------------
+
+
+
 
 
 

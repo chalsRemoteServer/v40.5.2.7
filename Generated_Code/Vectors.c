@@ -5,7 +5,7 @@
 **     Processor   : MCF52233CAF60
 **     Version     : Component 01.003, Driver 01.06, CPU db: 3.00.000
 **     Compiler    : CodeWarrior MCF C Compiler
-**     Date/Time   : 2026-09-04, 16:48, # CodeGen: 4
+**     Date/Time   : 2026-09-28, 17:48, # CodeGen: 5
 **     Abstract    :
 **
 **     Settings    :
@@ -177,7 +177,7 @@
     Cpu_ivINT_DMA1_DONE,               /* 0x4A  0x00000128   -   -   ivINT_DMA1_DONE            unused by PE */
     Cpu_ivINT_DMA2_DONE,               /* 0x4B  0x0000012C   -   -   ivINT_DMA2_DONE            unused by PE */
     Cpu_ivINT_DMA3_DONE,               /* 0x4C  0x00000130   -   -   ivINT_DMA3_DONE            unused by PE */
-    IOUPserial_Interrupt,              /* 0x4D  0x00000134   5   0   ivINT_UART0                used by PE */
+    IOUPserial_Interrupt,              /* 0x4D  0x00000134   4   7   ivINT_UART0                used by PE */
     VFDserial_Interrupt,               /* 0x4E  0x00000138   1   2   ivINT_UART1                used by PE */
     Cpu_ivINT_UART2,                   /* 0x4F  0x0000013C   -   -   ivINT_UART2                unused by PE */
     Cpu_ivReserved80,                  /* 0x50  0x00000140   -   -   ivReserved80               unused by PE */
