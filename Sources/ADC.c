@@ -50,16 +50,13 @@
 #define  ADC3   0x33
 #define  ADC4   0x34
                       // cuando le subi el bufer de 20 a 200 dejo de hacer el glitch
-#define  BUFFX_SIZE  5  //tamaño del buffer de procesamiento de datos para los filtros digitales
+#define  BUFFX_SIZE  5  //tamaï¿½o del buffer de procesamiento de datos para los filtros digitales
 #define  MAX_5VOLTS  0x7FFF//numero a digital maximo cuanto hay +5 volts en ADCs  en COMPLEMENTO a 2
 
 unsigned char displayADCvalores;// dice si se ejecuta desplegar los valores del adc en pruebas o no.
-//volatile  unsigned char ADCstatus;//maquina de estados del control del adc adquisicion de datos
+volatile  unsigned char ADCstatus;//maquina de estados del control del adc adquisicion de datos
 unsigned short int ADCbuffer;//buffer para la interrupcion de los adc
-//signed short int *endpointer8,*endpointer7, *px8,*px7;   //pointers de la  pila circular 
-//signed short int  *initx8, *initx7;
-//signed short int x8[BUFFX_SIZE]; //buffer de datos de entrada para los filtros digitales
-//signed short int x7[BUFFX_SIZE]; //buffer de datos de entrada para los filtros digitales
+
 extern unsigned char ErrorStatusLeds;
 struct _ADC_ adc;
 extern struct _Signal_ Signal;
@@ -69,12 +66,15 @@ extern struct _Signale_ Signale;
 typedef enum{
 	APAGADO=1,ENCENDIDO=0}estadoLed;
 typedef struct{
+  union {
+	 uint8 monADCbyte;
+	 struct {
+		 uint8 adcSample:1;
+		 uint8 busyIRQ:1;
+		 uint8 txQSPI:1; //transmit QSPI
+		 uint8 tmr2IRQ:1;
+		 uint8 reserved:4;}bits;}monADC;
   uint32 control;	
-  //uint8 counter;
-  uint8 busyIRQ;
-  uint8 adcSample;
-  uint8 readQSPI;
-  uint8 tmr2IRQ;
   estadoLed status;
   uint32 LedControl;
 }Led_ADC;
@@ -106,7 +106,7 @@ signed short int U8,U7;// pointers to  bring the ADC values variable de 16bits
 //
 // /* codigo para probar displayADCvalor en bit two complement despliega el array a y b en pantalla
 //	 p=&a[0];  
-//	 if(i>((sizeof(a)/2)-1)) i=0;//calcula el tamaño de bytes en short  int
+//	 if(i>((sizeof(a)/2)-1)) i=0;//calcula el tamaï¿½o de bytes en short  int
 //	 *adc8=*(p+i); //
 //	 p=&b[0];
 //	 *adc7=*(p+i++);
@@ -134,7 +134,7 @@ void disable_ADC(void){
 
 
 //QMR bits:7-0->  10h@1.252MHz, 08h@2.5Mhz  0A@2mhz  formula= 40Mhz/(2*2Mhz)=num binario del 7 al 0, 2Mhz:freec de QSPI deseada  
-void init_ADC(void){//CPOL=0  CPHA=1,-> los ADC TRABAJaron BIEN¡¡ CON ESTOS VALORES
+void init_ADC(void){//CPOL=0  CPHA=1,-> los ADC TRABAJaron BIENï¿½ï¿½ CON ESTOS VALORES
 register unsigned char i;	
 	 setReg16(PQSPAR,0x1515);//0001 0101 0001 0101=1515H
      setReg16(QMR, 0x810AU);//DDS->(1000 0001 0000 1010)  ADC:(1000 0000 0001 0000)  ->16bits tansfer
@@ -162,9 +162,11 @@ register unsigned char i;
 	 TI2_Enable();//HABILITAMOS timer2 para ADC2
 	 TI2_DisableEvent();
 	 //ADCstatus=0xC0 | ADC_1;//abxx xxxx a=anable ADC b=flag of RX SPI
-	 RC_ON(); //no quitar de aqui	
-	 CS0_OFF();
-	 ledADC.status=APAGADO;
+	 RC_ON(); //estado normal RC=1  cs0|1
+	 CS0_OFF(); //seleccion de ADC1   00=ADC1
+	 CS1_OFF(); //                    10=ADC2
+	 ADCstatus=1;//flip-flop del ADC, 11=AD9834
+	 ledADC.status=APAGADO;//
 	 LED3_Process_PutVal(1);//apagado=1
 
 }//inicizamos el ADC---------------------------------------------------------------------------------------
@@ -188,15 +190,17 @@ conversion is completed and the data is latched into the on-chip shift register*
 //interrupcion externa pin-41  IRQ11, INTERRUPCIon directa de hardare la ejecuta una IRQ oN
 //Interrupts when rising edge is trigger from busy adc's, despuede la conversion y guardado en los registros del valor de la conversion
 void Busy_Interrupt_IRQ(void){//Interrumption on down edge, EXTERNAL PIN INTERRUPT SIGNAL.
-       CS1_OFF();// select ADC8, inicimos lo leemos
+       CS0_OFF();// select ADC1, inicimos lo leemos
        setReg16Bit(QDLYR,SPE);//start trasmit to get data from ADC7
        Busy_Disable();//PULSO 8.2us, MicroSegundos
-       ledADC.busyIRQ=0;    
+       ledADC.busyIRQ
+
+       =0;
 }//fin busy interrupt  INTERRUPT REQUEST---------------------------------------------------------------------
  
 
 //CON  if(n++==1){n=0; se ejecuta la conversion cada 1000usegungos  //que el busy este en estado alto 
-//timer 1 se interrumpe cada 520useg y la señal RC debe ser cada 1mseg.
+//timer 1 se interrumpe cada 520useg y la seï¿½al RC debe ser cada 1mseg.
 void adcSample_IRQ(void){//se ejecuta cada 1ms y 14us lo lanza  el TI1@events.c
 //static unsigned char swap;	
 	    //ADCstatus  abxx xxxx, b=bandera de ejecucion del adcSampleIRQ, tm1 IRQ=500ns, tons, entra cada 1000ns
@@ -206,7 +210,7 @@ void adcSample_IRQ(void){//se ejecuta cada 1ms y 14us lo lanza  el TI1@events.c
 				 Busy_Enable();//este enable es importante si se quita se detiene la conversion.
 				 RC_OFF();//640nseg, que se ejecute la conversion, se ordena la execucion con low
 				 RC_ON();//}//PULSO DE 230ns, nanosegundos
-	             ledADC.adcSample=0;
+	             ledADC.adcSample=1;//se inicia monitoreo del ADC
 		 //else {swap=0xAA;}
         //}//encendemos bandera para hacer flipflop	
         
@@ -271,7 +275,7 @@ void disable_SM1(void){
 
 /************************************************************************************************************
  * CONTROLADORES DE INTERRUPCIONES DEL QSPI++++SM1.c++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- * debajo de la instrucción  setReg16Bit(QIR,SPIF); 
+ * debajo de la instrucciï¿½n  setReg16Bit(QIR,SPIF); 
  * en __declspec(interrupt) void SM1_Interrupt(void) 
  * poner:            
  * 
