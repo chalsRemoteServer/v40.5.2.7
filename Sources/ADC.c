@@ -73,6 +73,7 @@ typedef struct{
 		 uint8 busyIRQ:1;
 		 uint8 txQSPI:1; //transmit QSPI
 		 uint8 tmr2IRQ:1;
+		 uint8 ADC_enable:1;//habilita que se ejecute en ADC1 solamente
 		 uint8 reserved:4;}bits;}monADC;
   uint32 control;	
   estadoLed status;
@@ -165,22 +166,13 @@ register unsigned char i;
 	 RC_ON(); //estado normal RC=1  cs0|1
 	 CS0_OFF(); //seleccion de ADC1   00=ADC1
 	 CS1_OFF(); //                    10=ADC2
-	 ADCstatus=1;//flip-flop del ADC, 11=AD9834
+	 ADCstatus=1;//flip-flop del ADC, 11=AD9834   habilita el fipflop del ADC
 	 ledADC.status=APAGADO;//
 	 LED3_Process_PutVal(1);//apagado=1
 
 }//inicizamos el ADC---------------------------------------------------------------------------------------
 
 
-//char Busy_status(char s,char modo){//inicia la conversion de datos analogico digital
-//static  char statusbusy;
-//   if(modo=='w')
-//      statusbusy=s;//guarda el estatus del busy del ADC
-//   else
-//      return statusbusy;
-//return statusbusy;   
-//}//fin busy status-------------------------------------------
-// 
 
 
 
@@ -201,12 +193,45 @@ conversion is completed and the data is latched into the on-chip shift register*
 //interrupcion externa pin-41  IRQ11, INTERRUPCIon directa de hardare la ejecuta una IRQ oN
 //Interrupts when rising edge is trigger from busy adc's, despuede la conversion y guardado en los registros del valor de la conversion
 void Busy_Interrupt_IRQ(void){//Interrumption on down edge, EXTERNAL PIN INTERRUPT SIGNAL.
-       CS0_OFF();// select ADC1, inicimos lo leemos
+       CS0_OFF();// select ADC1,
        setReg16Bit(QDLYR,SPE);//start trasmit to get data from ADC7
        Busy_Disable();//PULSO 8.2us, MicroSegundos
        ledADC.busyIRQ=1;
+       ledADC.ADC_enable=1;//se habilita codigo cuando se transmite QSPI
 }//fin busy interrupt  INTERRUPT REQUEST------------------
  
+//ADC-Paso 4: Se ejecuta cuando se Transmite QSPI
+//se ejecuta cuando hay una IRQ de Transmision del QSPI
+void QSPI_OnTxChar_IRQ(void){//poner en evento de transmision
+     if(ledADC.ADC_enable){//Se ejecuta primera vez para ADC1.
+		   ledADC.ADC_enable=0;//Se desactiva para el siguiente Transmision QSPI
+		   CS0_ON();//activamos el siguiente ADC->ADC2
+		   setReg16Bit(QDLYR,SPE);//start Transmit to get Second ADC
+		   clrReg16Bit(PCSR0,EN);//Detener contador PIT0
+		   setReg16(PCNTR0,0x0000U);//Reiniciar contador
+		   TI2_EnableEvent();//habilita eventos de interrupcion
+		   TI2_Enable();//Iniciar PIT0
+		   ledADC.txQSPI=1;
+           }//----------------
+}//fin void QSPI_OnTxChar_IRQ(void){----------------------------------------
+
+
+
+void QSPI_On_TMR2_IRQ(void){//Int=145useg
+       TI2_DisableEvent();
+       if(!(QIR&QIR_SPIF_BITMASK)){return;}//Por si no termino de recibir los datos en 145useg,descartamos estos datos
+	   setReg16(QAR,0x0010); //IMPRTANTE ponemos el ADDRESS EN RECEPCION pointer to reg RX spi
+	   n=(signed short int)getReg16(QDR);//moves the next position and return old content
+	   if(!Signale.Raw.X.append(n,&Signale.Raw.X)){
+		   FailsCtl.LedStatus=ERROR2; }
+	   n=(signed short int)getReg16(QDR);//moves the next position and return old content
+	   if(!Signale.Raw.Y.append(n,&Signale.Raw.Y)){
+		   FailsCtl.LedStatus=ERROR2;}
+	   setReg16Bit(QIR,SPIF);//esto lo piso la IA
+	   ledADC.tmr2IRQ=1;
+}//FIN DE timer2 IRQ to get ADC2-------------------------------------
+
+
 
 
 //monitor del led que monitor si funcionan los ADCs
@@ -318,37 +343,6 @@ void Read_QSPI2(int16 *x,int16 *y){//esto no es interrupcion
       Signale.Raw.sem=0;//Liberamos recurso 
       ledADC.readQSPI=0;
 }//fin prueba---------------------------------------------------
-
-
-
-//INTERRUPCION PRINCIPAL MAQUINA AUTIMATICA DE 1ms AQUI  NO SE 
-//RESTA EL OFFSET
-//se ejecuta cuando hay una IRQ de Transmision del QSPI
-void QSPI_OnTxChar_IRQ(void){//poner en evento de transmision
-//signed short int n;
-		   if(Signale.Raw.sem){return;}//recurso ocupado nos salimos
-		   Signale.Raw.sem=1;//Tomamos control del recurso 
-		   CS1_ON();//activamos el siguiente ADC
-		   setReg16Bit(QDLYR,SPE);//start Transmit to get Second ADC
-		   TI2_EnableEvent();
-}//fin void QSPI_OnTxChar_IRQ(void){----------------------------------------------
-
-void QSPI_On_TMR2_IRQ(void){//Int=145useg
-int16 n;
-       TI2_DisableEvent();
-       if(!(QIR&QIR_SPIF_BITMASK)){return;}//Por si no termino de recibir los datos en 145useg,descartamos estos datos 
-	   setReg16(QAR,0x0010); //IMPRTANTE ponemos el ADDRESS EN RECEPCION pointer to reg RX spi
-	   n=(signed short int)getReg16(QDR);//moves the next position and return old content
-	   if(!Signale.Raw.X.append(n,&Signale.Raw.X)){
-		   FailsCtl.LedStatus=ERROR2; }
-	   n=(signed short int)getReg16(QDR);//moves the next position and return old content
-	   if(!Signale.Raw.Y.append(n,&Signale.Raw.Y)){
-		   FailsCtl.LedStatus=ERROR2;}
-	   CS1_OFF();//activamos el siguiente ADC
-	   setReg16Bit(QIR,SPIF);//esto lo piso la IA
-	   Signale.Raw.sem=0;//liberamios  recurso 
-	   ledADC.tmr2IRQ=0;
-}//FIN DE timer2 IRQ to get ADC2-------------------------------------
 
 
 
