@@ -131,6 +131,26 @@
  #define VEL_FLOP_ERROR3        3843
  #define VEL_FLOP_ERROR4        4843
 
+typedef enum{
+	APAGADO=1,ENCENDIDO=0}estadoLed;
+typedef struct{
+  union {
+	 uint8 monADCbyte;
+	 struct {
+		 uint8 adcSample:1;
+		 uint8 busyIRQ:1;
+		 uint8 txQSPI:1; //transmit QSPI
+		 uint8 tmr2IRQ:1;
+		 uint8 readQSPI:1;
+		 uint8 ADC_enable:1;//habilita que se ejecute en ADC1 solamente
+		 uint8 reserved:2;}bits;}monADC;
+  uint32 control;	
+  estadoLed status;
+  uint32 LedControl;
+}Led_ADC;
+
+
+
 
 // Definición de parámetros para LED System
 typedef enum {
@@ -284,6 +304,7 @@ void LED_NegVal_Debug(uint8_t led);
 uint8_t LED_GetVal_Debug(uint8_t led);
 void IRQ_Monitor_System_status_LEDs_v3(void);
 void IRQ_Monitor_System_Driver_LEDs_v1(void);
+void Monitor_de_Error_de_ADCs(void);	
 
 
 

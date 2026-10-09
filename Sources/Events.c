@@ -54,6 +54,7 @@ extern struct _COMMs_ com;
 volatile uint64_t Tick;//reloj del systema
 static uint8_t milisecond;//milisegundo control para ADC
 extern volatile uint8 delay_RelojAnalogo_IRQ;//cuenta 100mseg y alli se queda si llega alos 100mseg.,
+extern volatile  unsigned char ADCstatus;//maquina de estados del control del adc adquisicion de datos
 
 
 /* User includes (#include below this line is not maintained by Processor Expert) */
@@ -455,11 +456,13 @@ void TI1_OnInterrupt(void)
   /* Write your code here ... */
 	//500useg confirmado 25-jun-26
 	//500usegundos el intervalo de tiempo
-		
+static uint8 flipflopADC;//uno si otro no, para que sea cada 1mseg
 	 // version v40.++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	 Tick++;
-	 if(++milisecond>2){milisecond=0;//1 milisecond
-	        adcSample_IRQ();}//manda orden de conversion a  los ADCs y enable IRQ input BUSY
+	 if(ADCstatus){//ADC-Paso: 1: se ejecuta adcSample cada 1mseg
+		if(flipflopADC){flipflopADC=0;//1 milisecond
+	                   adcSample_IRQ();}//manda orden de conversion a  los ADCs y enable IRQ input BUSY
+		else{flipflopADC=1;}}
 	 TM1_IRQ1=0xFF;
 	 IRQ_Monitor_System_status_LEDs_v3();
 	 IRQ_Monitor_System_Driver_LEDs_v1();//IRQ cada 500useg

@@ -51,7 +51,7 @@ void push7(unsigned short int data);
 void SPIselect(unsigned char device);
 void adcSample_IRQ(void);
 char Busy_status(char s,char modo);// almacena el estatus del Busy del ADC para ver si ya mandamos el reloj cada milisegundo
-void disable_SM1(void);
+//void disable_SM1(void);
 void QSPI_OnTxChar_IRQ(void);
 //unsigned char Read_QSPI2(signed short int *xx8,signed short int *xx7);
 void Read_QSPI2(int16 *x,int16 *y);
