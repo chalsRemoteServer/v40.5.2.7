@@ -183,6 +183,17 @@ register unsigned char i;
 // 
 
 
+
+
+/*ADC-Paso: 2. Int cada 500useg by Tmr1,  RC debe ser cada 1mseg.  */
+void adcSample_IRQ(void){//se ejecuta cada 1ms y 14us lo lanza  el TI1@events.c
+	 Busy_Enable();//este enable es importante si se quita se detiene la conversion.
+	 RC_OFF();//640nseg, que se ejecute la conversion, se ordena la execucion con low
+	 RC_ON();//}//PULSO DE 230ns, nanosegundos
+	 ledADC.adcSample=1;//se inicia monitoreo del ADC
+}// adc sample---------------------------------------------------------------
+
+//ADC-Paso: 3: Recibimos el Busy de Ambos ADC, para iniciar lectura de los ADC's
 /*++++++Busy_Interrupt_IRQ+++++++++++++++++++ OJO-> Hay un inversor fisico
  * Busy Output. Goes LOW when a conversion is started, and remains LOW until the
 conversion is completed and the data is latched into the on-chip shift register*/
@@ -193,28 +204,10 @@ void Busy_Interrupt_IRQ(void){//Interrumption on down edge, EXTERNAL PIN INTERRU
        CS0_OFF();// select ADC1, inicimos lo leemos
        setReg16Bit(QDLYR,SPE);//start trasmit to get data from ADC7
        Busy_Disable();//PULSO 8.2us, MicroSegundos
-       ledADC.busyIRQ
-
-       =0;
-}//fin busy interrupt  INTERRUPT REQUEST---------------------------------------------------------------------
+       ledADC.busyIRQ=1;
+}//fin busy interrupt  INTERRUPT REQUEST------------------
  
 
-//CON  if(n++==1){n=0; se ejecuta la conversion cada 1000usegungos  //que el busy este en estado alto 
-//timer 1 se interrumpe cada 520useg y la se�al RC debe ser cada 1mseg.
-void adcSample_IRQ(void){//se ejecuta cada 1ms y 14us lo lanza  el TI1@events.c
-//static unsigned char swap;	
-	    //ADCstatus  abxx xxxx, b=bandera de ejecucion del adcSampleIRQ, tm1 IRQ=500ns, tons, entra cada 1000ns
-	//if((ADCstatus & 0xC0)==0xC0){//1xxx xxxx bit que habilita la ejecucion de los ADC's
-			 //if(swap==0xAA){//como tm1 se ejecuta cada 520nseg esto hace que se ejecute cada 1mseg
-				// swap=0;// quitamos la bnadera para hacer flip flop y generar 1ms de interrupcion
-				 Busy_Enable();//este enable es importante si se quita se detiene la conversion.
-				 RC_OFF();//640nseg, que se ejecute la conversion, se ordena la execucion con low
-				 RC_ON();//}//PULSO DE 230ns, nanosegundos
-	             ledADC.adcSample=1;//se inicia monitoreo del ADC
-		 //else {swap=0xAA;}
-        //}//encendemos bandera para hacer flipflop	
-        
-}// adc sample-----------------------------------------------------------------------------------------------
 
 //monitor del led que monitor si funcionan los ADCs
 void Monitor_de_Error_de_ADCs(void){	

@@ -459,7 +459,7 @@ void TI1_OnInterrupt(void)
 static uint8 flipflopADC;//uno si otro no, para que sea cada 1mseg
 	 // version v40.++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	 Tick++;
-	 if(ADCstatus){
+	 if(ADCstatus){//ADC-Paso: 1: se ejecuta adcSample cada 1mseg
 		if(flipflopADC){flipflopADC=0;//1 milisecond
 	                   adcSample_IRQ();}//manda orden de conversion a  los ADCs y enable IRQ input BUSY
 		else{flipflopADC=1;}}
