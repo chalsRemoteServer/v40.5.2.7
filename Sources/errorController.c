@@ -61,7 +61,8 @@ unsigned char ErrorStatusLeds;
 struct _Error323_ e;//error controller data struct
 extern  volatile unsigned char  TM1_IRQ1;
 
- uint8_t flip;   
+uint8_t flip;   
+Led_ADC ledADC;
 
 
 // Definición de variables globales
@@ -741,8 +742,26 @@ vT9:   ahora = millis();
 		   LedWarning_Timer();}  // Controlar LED Warning cada 1ms
 	   if(elapsed2>225){elapsed2=0;
 	       Monitor_System_Diagnostico_LEDs(EJECUTAR);}//ejeuta timer cada 500useg
-	   
+	   Monitor_de_Error_de_ADCs();
 }//-------------------------------------------------------------------------------------
+
+
+//monitor del led que monitor si funcionan los ADCs
+void Monitor_de_Error_de_ADCs(void){	
+const uint8	MAX=250,ERROR_ADC=0x3F;
+enum{ TIME_ON=300,TIME_OFF=2000};
+static uint8 ret;
+  if(++ledADC.control>800){ret=0;//0011 1111 
+      if((ledADC.monADC.monADCbyte&0x3F)==0x3F){//no hay error
+		   if(ledADC.status){	  
+			 if(++ledADC.LedControl>TIME_ON){
+				 ledADC.status=APAGADO;  
+				 LED3_Process_PutVal(APAGADO);}}
+		   else{if(++ledADC.LedControl>TIME_OFF){
+				 ledADC.status=ENCENDIDO;
+				 LED3_Process_PutVal(ENCENDIDO);}}}
+      else{LED3_Process_PutVal(ENCENDIDO);}}
+}//fin de monitor de los ADCs--------------------------------------
 
 
 
@@ -751,7 +770,7 @@ vT9:   ahora = millis();
 // ============================================================
 /*   NORM_DELAY: 1600->800mseg           */
 void IRQ_Monitor_System_status_LEDs_v3(void){//IRQ cada 500useg
-enum{ ERR_DELAY=700,  NORM_DELAY=1600 /*1250*/};
+enum{ ERR_DELAY=700,  NORM_DELAY=1250 /*1250*/};
 static uint16_t delay;
   
   switch(FailsCtl.LedStatus){//leds status

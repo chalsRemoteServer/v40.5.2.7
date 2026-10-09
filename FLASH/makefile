@@ -110,7 +110,7 @@ clean:
 	-@echo ' '
 
 post-build:
-	-"E:/00_MIS_DOCUMENTOS/02_DESARROLLO/04_FIRMWARE/03_GSI_ASD+_f/03_uP_f/v40.5_gitHub/v40.5.2.7/memory_usage.bat" "37_8_IN1UP.elf.xMAP" "v40.5.2.7"
+	-"E:/00_MIS_DOCUMENTOS/02_DESARROLLO/04_FIRMWARE/03_GSI_ASD+_f/03_uP_f/v40.5/v40.5.2.7/memory_usage.bat" "37_8_IN1UP.elf.xMAP" "v40.5.2.7"
 	-@echo ' '
 
 .PHONY: all clean dependents explicit-dependencies warning-messages
